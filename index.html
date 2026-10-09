@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopesa Express</title>
+    <!-- FontAwesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Folha de Estilos Minimalista Kopesa -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- TOPO / HEADER DA APLICAÇÃO -->
+    <header class="app-header">
+        <div class="logo-texto" style="cursor: pointer;" onclick="irParaHome()">
+            Kopesa <span class="destaque">express</span>
+        </div>
+        <div class="header-actions">
+            <span id="badge-utilizador" style="font-size: 0.8rem; color: var(--texto-cinza);"></span>
+            <!-- Botão de Carrinho -->
+            <button class="icon-btn oculto" id="btn-carrinho" onclick="abrirCarrinho()" title="Carrinho">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="badge-carrinho" class="badge-count">0</span>
+            </button>
+            <!-- Botão de Acesso Admin -->
+            <button class="icon-btn" id="btn-admin-login" onclick="solicitarPinAdmin()" title="Painel Admin">
+                <i class="fas fa-shield-alt"></i>
+            </button>
+            <button class="icon-btn oculto" id="btn-logout" onclick="realizarLogout()" title="Terminar Sessão">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="app-main" style="max-width: 900px;">
+
+        <!-- 1. ECRÃ DE AUTENTICAÇÃO / LOGIN / CADASTRO -->
+        <section id="ecra-auth" class="auth-card" style="max-width: 440px;">
+            <h2>Bem-vindo à <span class="destaque-texto">Kopesa</span></h2>
+            <p>A sua plataforma de marketplace</p>
+
+            <div class="tabs-auth">
+                <button type="button" class="tab-btn ativo" id="tab-entrar" onclick="mudarModoAuth('entrar')">Entrar</button>
+                <button type="button" class="tab-btn" id="tab-criar" onclick="mudarModoAuth('criar')">Criar Conta</button>
+            </div>
+
+            <form onsubmit="processarAutenticacao(event)">
+                <div class="form-group">
+                    <label id="label-contacto">Telefone ou Email</label>
+                    <input type="text" id="auth-contacto" required placeholder="Insira o seu contacto">
+                </div>
+                
+                <div class="form-group">
+                    <label>Palavra-passe</label>
+                    <input type="password" id="auth-password" required placeholder="********">
+                </div>
+
+                <div class="form-group oculto" id="grupo-nome">
+                    <label>Nome Completo</label>
+                    <input type="text" id="auth-nome" placeholder="O seu nome">
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Conta</label>
+                    <select id="auth-perfil" required>
+                        <option value="">-- Selecione o Tipo de Conta --</option>
+                        <option value="cliente">Cliente / Comprador</option>
+                        <option value="vendedor">Vendedor / Loja</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-principal" id="btn-submit-auth">Entrar na Plataforma</button>
+            </form>
+        </section>
+
+        <!-- 2. ECRÃ DE ESCOLHA INICIAL (OS DOIS BOTÕES APÓS ENTRAR) -->
+        <section id="ecra-escolha" class="auth-card oculto" style="text-align: center; max-width: 440px;">
+            <h2>Painel Principal</h2>
+            <p>Escolha o que deseja fazer na plataforma</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                <button class="btn-principal" onclick="irParaMarketplace()">Ir para o Kopesa Market</button>
+                <button class="btn-secundario" style="width: 100%; padding: 13px;" onclick="irParaPainelVendedor()">Painel de Vendedor</button>
+            </div>
+        </section>
+
+        <!-- 3. ECRÃ DO KOPESA MARKET -->
+        <section id="ecra-cliente" class="ecra-ativo oculto" style="width: 100%;">
+            <div class="banner-bemvindo" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3>Kopesa Market</h3>
+                    <p>Encontre os melhores produtos. A entrega e receção são acordadas diretamente com o vendedor.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-principal" style="width: auto; padding: 10px 18px; margin-top: 0;" onclick="abrirModalNovoProduto()">+ Publicar Produto</button>
+                    <button class="btn-secundario" onclick="voltarParaEscolha()">Voltar ao Menu</button>
+                </div>
+            </div>
+
+            <h4 style="margin-bottom: 15px; font-weight: 500; color: var(--texto-claro);">Produtos Disponíveis</h4>
+            
+            <!-- Grelha explícita para os produtos aparecerem alinhados -->
+            <div class="grid-produtos" id="lista-produtos-cliente">
+                <!-- Os produtos publicados aparecem aqui dinamicamente -->
+            </div>
+        </section>
+        
+        <!-- 4. ECRÃ DO VENDEDOR / LOJISTA (SÓ CONTÉM TOTAL E ESTADO DAS VENDAS) -->
+        <section id="ecra-vendedor" class="ecra-ativo oculto" style="width: 100%;">
+            <div class="painel-container">
+                <div class="painel-header-flex">
+                    <div>
+                        <h2>Painel do Lojista</h2>
+                        <p>Resumo da sua atividade</p>
+                    </div>
+                    <button class="btn-secundario" onclick="voltarParaEscolha()">Voltar</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>Total de Produtos Publicados</span>
+                        <h3 id="stat-total-produtos">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span>Estado das Vendas</span>
+                        <h3 style="font-size: 1.1rem; color: #4ade80; margin-top: 8px;">Ativo nas Vendas</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. ECRÃ DO ADMINISTRADOR (PIN 1504) -->
+        <section id="ecra-admin" class="ecra-ativo oculto" style="width: 100%;">
+            <div class="painel-container">
+                <div class="painel-header-flex">
+                    <div>
+                        <h2>Painel Administrativo</h2>
+                        <p>Gestão de comissões, vendas e levantamentos</p>
+                    </div>
+                    <button class="btn-secundario" onclick="irParaHome()">Voltar</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>Total de Vendas Globais</span>
+                        <h3 id="admin-total-vendas">0 Kz</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span>Comissões do Site (Criador)</span>
+                        <h3 id="admin-comissoes" style="color: #4ade80;">0 Kz</h3>
+                    </div>
+                </div>
+
+                <div class="auth-card" style="max-width: 100%; margin-top: 20px;">
+                    <h3>Solicitação de Saque / Levantamento</h3>
+                    <p>Associado a Conta Bancária ou Multicaixa Express (MCX)</p>
+                    <div class="form-group">
+                        <label>IBAN ou Telemóvel MCX</label>
+                        <input type="text" id="admin-conta-saque" placeholder="AO06 ... ou 923...">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor a Sacar (Kz)</label>
+                        <input type="number" id="admin-valor-saque" placeholder="0">
+                    </div>
+                    <button class="btn-principal" onclick="realizarSaqueAdmin()">Solicitar Levantamento</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL PARA ADICIONAR PRODUTO -->
+    <div id="modal-produto" class="modal oculto">
+        <div class="modal-conteudo">
+            <div class="modal-header">
+                <h3>Publicar Novo Produto</h3>
+                <button class="close-btn" onclick="fecharModalNovoProduto()">&times;</button>
+            </div>
+            <form onsubmit="guardarNovoProduto(event)">
+                <div class="form-group">
+                    <label>Nome do Produto</label>
+                    <input type="text" id="prod-nome" required placeholder="Ex: Ténis Nike">
+                </div>
+                <div class="form-group">
+                    <label>Valor (Kz)</label>
+                    <input type="number" id="prod-valor" required placeholder="Ex: 25000">
+                </div>
+                <div class="form-group">
+                    <label>Número do Proprietário</label>
+                    <input type="text" id="prod-contacto" required placeholder="Ex: 923456789">
+                </div>
+                <div class="form-group">
+                    <label>Foto do Produto</label>
+                    <input type="file" id="prod-foto" accept="image/*" style="padding: 8px;">
+                </div>
+                <button type="submit" class="btn-principal">Publicar no Kopesa Market</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DO CARRINHO / SOLICITAÇÃO -->
+    <div id="modal-carrinho" class="modal oculto">
+        <div class="modal-conteudo">
+            <div class="modal-header">
+                <h3>O seu Carrinho</h3>
+                <button class="close-btn" onclick="fecharCarrinho()">&times;</button>
+            </div>
+            <div id="itens-carrinho-lista" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                <!-- Itens adicionados -->
+            </div>
+            <div class="total-row">
+                <span>Total:</span>
+                <strong id="carrinho-total-valor" style="color: var(--cor-destaque);">0 Kz</strong>
+            </div>
+            <button class="btn-principal" onclick="finalizarSolicacaoCompra()">Finalizar Solicitação</button>
+        </div>
+    </div>
+
+    <!-- Ficheiro JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
